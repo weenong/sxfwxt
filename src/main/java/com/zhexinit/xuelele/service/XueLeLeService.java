@@ -275,7 +275,7 @@ public class XueLeLeService {
         return retMap;
     }
 
-    public boolean pay(String sessionId, String authNo, String checkCode, String clientId, String clientSecret, String productBase, String productType, String accountId,String orderId) throws Exception {
+    public boolean pay(String sessionId, String authNo, String checkCode, String clientId, String clientSecret, String productBase, String productType, String accountId,String orderId,String extra) throws Exception {
         String url = "https://cap.chinaunicom.cn/cap/tokens/";
         HttpHeaders headers = new HttpHeaders();
         headers.put(HttpHeaders.COOKIE,new ArrayList<String>(){{
@@ -353,6 +353,7 @@ public class XueLeLeService {
             JobParameter param = new JobParameter();
             param.setJobName(capOrder);
             param.setJobGroup("JobGroup");
+            param.setExtra(extra);
 //            param.setCronExpression("0/5 * * * * ?");
             param.setCallBackUrl(callBackUrl);
             param.setDescription(orderId);

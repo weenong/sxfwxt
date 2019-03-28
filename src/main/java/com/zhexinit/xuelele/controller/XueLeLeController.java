@@ -87,9 +87,9 @@ public class XueLeLeController {
     }
 
     @GetMapping("/pay")
-    public Object pay(String sessionId,String authNo,String checkCode,String clientId,String clientSecret,String productBase,String productType,String accountId,String orderId){
+    public Object pay(String sessionId,String authNo,String checkCode,String clientId,String clientSecret,String productBase,String productType,String accountId,String orderId,String extra){
         try {
-            boolean ret = this.xueLeLeService.pay(sessionId, authNo, checkCode, clientId, clientSecret, productBase, productType, accountId, orderId);
+            boolean ret = this.xueLeLeService.pay(sessionId, authNo, checkCode, clientId, clientSecret, productBase, productType, accountId, orderId,extra);
             if(ret){
                 return new RespResult().setMsg("提交成功");
             }
