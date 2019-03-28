@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/xuelele")
+@RequestMapping
 public class XueLeLeController {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @Value("${callbackurl}")
@@ -168,10 +168,13 @@ public class XueLeLeController {
     }
 
     @GetMapping("/test")
-    public Object test(String jobName) throws Exception{
+    public Object test(String jobName,String capOrder) throws Exception{
         JobParameter param = new JobParameter();
         param.setJobName(jobName);
         param.setJobGroup("JobGroup");
+        param.setAccountId("13212345678");
+        param.setExtra("xxxxxxx");
+        param.setDescription(capOrder);
 //        param.setCronExpression("0/5 * * * * ?");
         param.setCallBackUrl(callBackUrl);
         JobDetail jobDetail = JobBuilder.newJob(CallBackJob.class)
