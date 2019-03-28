@@ -17,6 +17,7 @@ public class JobParameter {
     private Boolean isSync = false;
     private String description;
     private String extra;
+    private String accountId;
     private Date updatedTime = new Date();
 
     private int cnt = 0;

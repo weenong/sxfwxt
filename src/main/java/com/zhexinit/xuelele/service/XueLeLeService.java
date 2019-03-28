@@ -351,12 +351,13 @@ public class XueLeLeService {
 
         if(StringUtils.isNotBlank(capOrder)){
             JobParameter param = new JobParameter();
-            param.setJobName(capOrder);
+            param.setJobName(orderId);
             param.setJobGroup("JobGroup");
             param.setExtra(extra);
+            param.setAccountId(accountId);
 //            param.setCronExpression("0/5 * * * * ?");
             param.setCallBackUrl(callBackUrl);
-            param.setDescription(orderId);
+            param.setDescription(capOrder);
             JobDetail jobDetail = JobBuilder.newJob(CallBackJob.class)
                     .withIdentity(param.getJobName(), param.getJobGroup()).build();
             // 表达式调度构建器
