@@ -27,7 +27,7 @@ public class CallBackJob implements Job {
             String accountId = jobParam.getAccountId();
             int cnt = jobParam.getCnt();
             if (jobParam != null) {
-                String url = "http://i.xuelele.10155.com/Pay/queryOrder?orderId=" + jobParam.getJobName();
+                String url = "http://i.xuelele.10155.com/Pay/queryOrder?orderId=" + jobParam.getDescription();
 
                 String line = (String)httpSend(url,"POST").get("text");
                 Map map = JackJson.fromJsonToObject(line,Map.class);
