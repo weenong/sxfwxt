@@ -59,8 +59,8 @@ public class RestTemplateConfig {
     @Bean
     @Scope(value="prototype", proxyMode= ScopedProxyMode.TARGET_CLASS)
     public HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory(){
-        //Httpclient连接池，长连接保持30秒
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(30, TimeUnit.SECONDS);
+        //Httpclient连接池，长连接保持90秒
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(90, TimeUnit.SECONDS);
 
         //设置总连接数
         connectionManager.setMaxTotal(1000);
@@ -78,7 +78,7 @@ public class RestTemplateConfig {
         HttpClient httpClient = HttpClientBuilder.create()
                 .setConnectionManager(connectionManager)
                 .setDefaultHeaders(headers)
-                .setRetryHandler(new DefaultHttpRequestRetryHandler(3, true)) //设置重试次数
+                .setRetryHandler(new DefaultHttpRequestRetryHandler(6, true)) //设置重试次数
                 .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy()) //设置保持长连接
                 .build();
 
@@ -87,11 +87,10 @@ public class RestTemplateConfig {
                 new HttpComponentsClientHttpRequestFactory(httpClient);
 
         //设置客户端和服务端建立连接的超时时间
-        requestFactory.setConnectTimeout(10000);
-        //设置客户端从服务端读取数据的超时时间
-        requestFactory.setReadTimeout(30000);
+        requestFactory.setConnectTimeout(300000);
+        requestFactory.setReadTimeout(300000);
         //设置从连接池获取连接的超时时间，不宜过长
-        requestFactory.setConnectionRequestTimeout(200);
+        requestFactory.setConnectionRequestTimeout(300000);
         //缓冲请求数据，默认为true。通过POST或者PUT大量发送数据时，建议将此更改为false，以免耗尽内存
         requestFactory.setBufferRequestBody(true);
 

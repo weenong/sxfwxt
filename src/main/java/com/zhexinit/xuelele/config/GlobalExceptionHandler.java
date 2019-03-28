@@ -19,6 +19,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public RespResult exception(Exception e) {
         log.error("发生异常, e={}",e.getMessage(), e);
-        return new RespResult().setCode("0001").setMsg(e.getMessage());
+        return new RespResult().setCode(1);
     }
 }
