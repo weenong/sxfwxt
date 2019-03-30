@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping
-public class XueLeLeController {
+public class ShouXianShouQiController {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -34,16 +34,15 @@ public class XueLeLeController {
 
     @Autowired
     private RestTemplate restTemplate;
-    int limit =50;
+    int limit =100;
 
 
-    @GetMapping("/test")
-    public Object test(String type,String startDate,String endDate) throws Exception{
+    @GetMapping("/shouqi")
+    public Object test(String startDate,String endDate) throws Exception{
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         Param param = new Param();
         param.setEndDate(endDate);
         param.setStartDate(startDate);
-        param.setType(type);
         List<Map> list = Collections.synchronizedList(new ArrayList());
 
         Map map = fetch(param,1);
@@ -93,16 +92,25 @@ public class XueLeLeController {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map respMap = response.getBody();
             List<Map> list = (List)respMap.get("data");
+            ExecutorService executorService = Executors.newFixedThreadPool(15);
             for(Map m:list) {
                 String str = JackJson.fromObjectToJson(m);
                 ShouXianShouQi shouXianShouQi = JackJson.fromJsonToObject(str, ShouXianShouQi.class);
-                detail(shouXianShouQi);
+//                detail(shouXianShouQi);
+                DetailTask detailTask = new DetailTask(shouXianShouQi);
+                executorService.execute(detailTask);
 //                datastore.save(shouXianShouQi);
+            }
+            executorService.shutdown();
+            try {
+                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
             return respMap;
         }catch (Exception ex){
             Error error = new Error();
-            error.setParam(JackJson.fromObjectToJson(param) );
+            error.setParam(JackJson.fromObjectToJson(paramMap) );
             error.setPage(page);
             error.setUrl(url);
             datastore.save(error);
@@ -170,8 +178,21 @@ public class XueLeLeController {
         }
     }
 
+    class DetailTask implements Runnable{
+
+        private ShouXianShouQi shouXianShouQi;
+
+        public DetailTask(ShouXianShouQi shouXianShouQi){
+            this.shouXianShouQi = shouXianShouQi;
+        }
+        @Override
+        public void run() {
+            detail(shouXianShouQi);
+        }
+    }
+
     public static void main(String[] args) {
-        String str = "proxyCompanyCode: null,orgType: 0,authOrgCode: null,createTime: 2019-03-20 09:00:04.0,updateTime: 2019-03-20 09:00:04.0,flag: null,page: 1,start: 0,limit: 15,castSlipCode: SX151829581,slipCode: ,companyCode: null,insuranceName: 工银安盛人寿安康e生医疗保险,insuranceCode: MMD,insuranceMoney: 2000000.0000,timeLimit: 一年,paymentTimeLimit: 1年交,isSingleRow: 0,slipYear: 1,formalitiesFee: null,commissionFee: null,insurancePremium: 418.0000,otherPremium: 0.0000,guaranteeFee: 41.8000,feeProportion: 0.0800,fee: 33.4400,commissionProportion: 0.0500,commission: 20.9000,ageIndex: 0,settleAccounts: 0,subtotal: 418.0000";
+        String str = "customerName: 王岭,insuranceCode: 3151,returning: 1,settleAccounts: 1,castSlipCode: 1001011206431708,shouldPayMoney: 6000.00,slipYear: 3,actualPay: 6000.00,receipt: 1,endDateTime: 2019-03-08,effective: 1,continuePayDateTime: 2019-01-07,insuranceNameAttr: 盛世年年,slipCode: 1402001710000028,insuranceMoney: 1850.46,receive: 1,checkState: 2,shouldPayDateTime: 2019-01-07,companyNameAttr: 国华人寿,guaranteeFee: 0.0000";
         String[] tmp1 = str.split(",");
         for(String t:tmp1){
             String s = t.split(":")[0];
