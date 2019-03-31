@@ -34,12 +34,12 @@ public class ShouXianXuQiController {
 
     @Autowired
     private RestTemplate restTemplate;
-    int limit =200;
+    int limit =500;
 
 
     @GetMapping("/xuqi")
     public Object test(String startDate,String endDate) throws Exception{
-        ExecutorService executorService = Executors.newFixedThreadPool(15);
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
         Param param = new Param();
         param.setEndDate(endDate);
         param.setStartDate(startDate);
@@ -73,7 +73,7 @@ public class ShouXianXuQiController {
     private Map fetch(Param param,int page){
         MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<>();
         System.out.println("startdate:" + param.getStartDate() + ",enddate:" + param.getEndDate() + ",page:" + page);
-        String url = "http://test-zj.sxfwxt.com:8099/lifeInsurance/getGuaranteeslipList";
+        String url = "http://test-zj.sxfwxt.com:8099/lifeInsurance/getInsuranceInfoList";
         try {
             HttpHeaders headers = new HttpHeaders();
 
@@ -84,7 +84,7 @@ public class ShouXianXuQiController {
             headers.set("X-Requested-With", "XMLHttpRequest");
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-            paramMap.add("parmData", "{\"companyCode\":null,\"slipOrCastSlipCode\":\"\",\"customerName\":\"\",\"userName\":\"\",\"flowState\":\"0\",\"startDate\":\""+param.getStartDate()+"\",\"endDate\":\""+param.getEndDate()+"\",\"proxyCompanyCode\":2,\"authOrgCode\":\"\",\"pagesize\":1}");
+            paramMap.add("parmData", "{\"companyCode\":\"\",\"slipCode\":\"\",\"userAgentName\":\"\",\"startDate\":\""+param.getStartDate()+"\",\"endDate\":\""+param.getEndDate()+"\",\"proxyCompanyCode\":2,\"authOrgCode\":\"\",\"pagesize\":1}");
             paramMap.add("page", page + "");
             paramMap.add("start", ((page - 1) * limit) + "");
             paramMap.add("limit", limit + "");
@@ -92,19 +92,14 @@ public class ShouXianXuQiController {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map respMap = response.getBody();
             List<Map> list = (List)respMap.get("data");
-            ExecutorService executorService = Executors.newFixedThreadPool(10);
+            List<ShouXianXuQi> shouXianXuQiList = new ArrayList<>();
             for(Map m:list) {
                 String str = JackJson.fromObjectToJson(m);
                 ShouXianXuQi shouXianXuQi = JackJson.fromJsonToObject(str, ShouXianXuQi.class);
+                shouXianXuQiList.add(shouXianXuQi);
 
-                datastore.save(shouXianXuQi);
             }
-            executorService.shutdown();
-            try {
-                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MINUTES);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            datastore.save(shouXianXuQiList);
             return respMap;
         }catch (Exception ex){
             Error error = new Error();

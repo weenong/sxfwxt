@@ -21,6 +21,7 @@ public class ShouXianXuQi {
     private String endDateTime;
     private String effective;
     private String continuePayDateTime;
+    private String withdraw;
     private String insuranceNameAttr;
     private String slipCode;
     private String insuranceMoney;
@@ -29,4 +30,6 @@ public class ShouXianXuQi {
     private String shouldPayDateTime;
     private String companyNameAttr;
     private String guaranteeFee;
+    private String quit;
+    private String slipCodeStop;
 }

@@ -34,12 +34,17 @@ public class ShouXianShouQiController {
 
     @Autowired
     private RestTemplate restTemplate;
-    int limit =100;
+    int limit =600;
 
+    @GetMapping("/shouqibypage")
+    public Object byPage(Param param,int page) throws Exception{
+        Map map = fetch(param,page);
+        return map;
+    }
 
     @GetMapping("/shouqi")
     public Object test(String startDate,String endDate) throws Exception{
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
         Param param = new Param();
         param.setEndDate(endDate);
         param.setStartDate(startDate);
@@ -92,23 +97,27 @@ public class ShouXianShouQiController {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map respMap = response.getBody();
             List<Map> list = (List)respMap.get("data");
-            ExecutorService executorService = Executors.newFixedThreadPool(15);
+//            ExecutorService executorService = Executors.newFixedThreadPool(1);
+            List<ShouXianShouQi> shouXianShouQiList = new ArrayList<>();
             for(Map m:list) {
                 String str = JackJson.fromObjectToJson(m);
                 ShouXianShouQi shouXianShouQi = JackJson.fromJsonToObject(str, ShouXianShouQi.class);
-//                detail(shouXianShouQi);
-                DetailTask detailTask = new DetailTask(shouXianShouQi);
-                executorService.execute(detailTask);
+                detail(shouXianShouQi);
+                shouXianShouQiList.add(shouXianShouQi);
+//                DetailTask detailTask = new DetailTask(shouXianShouQi);
+//                executorService.execute(detailTask);
 //                datastore.save(shouXianShouQi);
             }
-            executorService.shutdown();
-            try {
-                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MINUTES);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            datastore.save(shouXianShouQiList);
+//            executorService.shutdown();
+//            try {
+//                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MINUTES);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             return respMap;
         }catch (Exception ex){
+            ex.printStackTrace();
             Error error = new Error();
             error.setParam(JackJson.fromObjectToJson(paramMap) );
             error.setPage(page);
@@ -121,7 +130,7 @@ public class ShouXianShouQiController {
 
 
 
-    private Map detail(ShouXianShouQi shouXianShouQi){
+    private Map detail(ShouXianShouQi shouXianShouQi) throws Exception{
         MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<>();
         System.out.println("CastSlipCode:" + shouXianShouQi.getCastSlipCode() );
         String url = "http://test-zj.sxfwxt.com:8099/lifeInsurance/getGuaranteeslipByCode/2/" + shouXianShouQi.getCastSlipCode();
@@ -142,17 +151,12 @@ public class ShouXianShouQiController {
             String str = JackJson.fromObjectToJson(m);
             GuaranteeslipByCode guaranteeslipByCode = JackJson.fromJsonToObject(str, GuaranteeslipByCode.class);
             shouXianShouQi.setGuaranteeslipByCode(guaranteeslipByCode);
-            datastore.save(shouXianShouQi);
+//            datastore.save(shouXianShouQi);
             return respMap;
         }catch (Exception ex){
             ex.printStackTrace();
-            Error error = new Error();
-            error.setParam("CastSlipCode:" + shouXianShouQi.getCastSlipCode() );
-            error.setUrl(url);
-            datastore.save(error);
-            System.out.println("CastSlipCode:" + shouXianShouQi.getCastSlipCode() + " 出错");
+            throw ex;
         }
-        return null;
     }
     @Data
     class Param{
@@ -187,7 +191,11 @@ public class ShouXianShouQiController {
         }
         @Override
         public void run() {
-            detail(shouXianShouQi);
+            try {
+                detail(shouXianShouQi);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
